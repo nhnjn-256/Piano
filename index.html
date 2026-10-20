@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Transkun Studio - Piano Audio to MIDI Visualizer</title>
+  <title>Transkun Studio Pro - Piano Audio to MIDI & Score Visualizer</title>
   <!-- Tone.js & @tonejs/midi CDN -->
   <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.js"></script>
@@ -18,6 +18,7 @@
       --accent-hover: #0284c7;
       --success: #22c55e;
       --danger: #ef4444;
+      --warning: #f59e0b;
     }
     * { box-sizing: border-box; }
     body {
@@ -28,7 +29,7 @@
       line-height: 1.5;
     }
     header {
-      padding: 16px 24px;
+      padding: 14px 24px;
       background: #090d16;
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -39,7 +40,7 @@
     }
     header h1 {
       margin: 0;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -49,7 +50,7 @@
       align-items: center;
       gap: 8px;
       flex: 1;
-      max-width: 520px;
+      max-width: 540px;
     }
     .api-bar input {
       flex: 1;
@@ -58,7 +59,7 @@
       border: 1px solid var(--border);
       background: var(--panel);
       color: var(--text);
-      font-size: 0.875rem;
+      font-size: 0.85rem;
     }
     .status-dot {
       width: 10px;
@@ -66,31 +67,32 @@
       border-radius: 50%;
       background: var(--muted);
       display: inline-block;
+      flex-shrink: 0;
     }
     .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
     .status-dot.offline { background: var(--danger); }
 
     main {
-      max-width: 1200px;
-      margin: 24px auto;
+      max-width: 1320px;
+      margin: 20px auto;
       padding: 0 16px;
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 390px 1fr;
       gap: 20px;
     }
-    @media (max-width: 900px) {
+    @media (max-width: 980px) {
       main { grid-template-columns: 1fr; }
     }
     .card {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 20px;
+      padding: 18px;
     }
     .tabs {
       display: flex;
       gap: 6px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       background: #0f172a;
       padding: 4px;
       border-radius: 8px;
@@ -103,7 +105,7 @@
       color: var(--muted);
       cursor: pointer;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
     }
     .tab-btn.active {
@@ -113,21 +115,60 @@
     .input-group {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
-    input[type="text"], input[type="file"] {
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    label.field-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+    input[type="text"], input[type="number"], input[type="file"], select {
       width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: #0f172a;
       color: var(--text);
+      font-size: 0.85rem;
     }
+    .options-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .options-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 2px;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .checkbox-row input { cursor: pointer; accent-color: var(--accent); }
+
     .btn {
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: 8px;
       border: none;
       font-weight: 600;
+      font-size: 0.85rem;
       cursor: pointer;
       background: var(--accent);
       color: #0f172a;
@@ -144,39 +185,61 @@
       color: var(--text);
     }
     .btn-secondary:hover:not(:disabled) { background: #475569; }
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.78rem;
+    }
 
     #logBox {
-      margin-top: 16px;
-      padding: 12px;
+      margin-top: 14px;
+      padding: 10px;
       border-radius: 8px;
       background: #090d16;
       font-family: monospace;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       color: var(--muted);
-      min-height: 80px;
+      min-height: 95px;
       max-height: 180px;
       overflow-y: auto;
       white-space: pre-wrap;
     }
 
-    /* Visualizer Area */
+    /* Visualizer Controls */
     .visualizer-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 10px;
     }
     .transport-controls {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
+    }
+    .control-bar-2 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 10px 12px;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 0.82rem;
+    }
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .seek-bar {
       width: 100%;
-      margin: 8px 0 14px;
+      margin: 4px 0 12px;
       accent-color: var(--accent);
       cursor: pointer;
     }
@@ -194,8 +257,8 @@
     .meta-bar {
       display: flex;
       gap: 16px;
-      margin-top: 12px;
-      font-size: 0.85rem;
+      margin-top: 10px;
+      font-size: 0.82rem;
       color: var(--muted);
       flex-wrap: wrap;
     }
@@ -204,16 +267,16 @@
 <body>
 
 <header>
-  <h1>🎹 Transkun Studio</h1>
+  <h1>🎹 Transkun Studio Pro</h1>
   <div class="api-bar">
     <span id="statusDot" class="status-dot" title="API接続状態"></span>
-    <input type="text" id="apiUrlInput" placeholder="ColabのURL (https://xxxx.trycloudflare.com)" />
-    <button class="btn btn-secondary" id="checkApiBtn">接続確認</button>
+    <input type="text" id="apiUrlInput" placeholder="https://ユーザー名-transkun-api.hf.space" />
+    <button class="btn btn-secondary btn-sm" id="checkApiBtn">接続確認</button>
   </div>
 </header>
 
 <main>
-  <!-- 左パネル：入力＆変換 -->
+  <!-- 左パネル：入力＆変換設定 -->
   <section class="card">
     <div class="tabs">
       <button class="tab-btn active" data-tab="youtube">YouTube URL</button>
@@ -223,72 +286,179 @@
 
     <!-- Tab 1: YouTube -->
     <div id="tab-youtube" class="input-group">
-      <label style="font-size:0.85rem; color:var(--muted);">ピアノ演奏のYouTube URL</label>
-      <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
-      <button class="btn" id="convertYoutubeBtn">🚀 TranskunでMIDI変換</button>
+      <div>
+        <label class="field-label">ピアノ演奏のYouTube URL</label>
+        <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
+      </div>
     </div>
 
     <!-- Tab 2: Audio File -->
     <div id="tab-audio" class="input-group" style="display:none;">
-      <label style="font-size:0.85rem; color:var(--muted);">音声ファイル (MP3 / WAV / FLAC / M4A)</label>
-      <input type="file" id="audioFileInput" accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg" />
-      <button class="btn" id="convertAudioBtn">🚀 TranskunでMIDI変換</button>
+      <div>
+        <label class="field-label">ピアノ音声ファイル (MP3 / WAV / FLAC / M4A)</label>
+        <input type="file" id="audioFileInput" accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg" />
+      </div>
     </div>
 
     <!-- Tab 3: Local MIDI -->
     <div id="tab-midi" class="input-group" style="display:none;">
-      <label style="font-size:0.85rem; color:var(--muted);">手元のMIDIファイル (.mid) を直接表示</label>
-      <input type="file" id="midiFileInput" accept=".mid,.midi" />
+      <div>
+        <label class="field-label">手元のMIDIファイル (.mid) を直接表示・再生</label>
+        <input type="file" id="midiFileInput" accept=".mid,.midi" />
+      </div>
     </div>
 
-    <div id="logBox">準備完了。ColabのURLを入力するか、手元のMIDIファイルを読み込んでください。</div>
+    <!-- 共通採譜オプション (YouTube / 音声ファイル時) -->
+    <div id="transcribeOptions" class="options-box">
+      <div class="options-title">⏱ 区間指定 & テンポ・精度オプション</div>
+
+      <div class="row-2">
+        <div>
+          <label class="field-label">開始時間 (例: 0:30 または 30)</label>
+          <input type="text" id="startTimeInput" placeholder="未指定(先頭から)" />
+        </div>
+        <div>
+          <label class="field-label">終了時間 (例: 1:15 または 75)</label>
+          <input type="text" id="endTimeInput" placeholder="未指定(最後まで)" />
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div>
+          <label class="field-label">原曲BPM (DAWグリッド同期用)</label>
+          <input type="number" id="inputBpm" value="120" min="20" max="300" step="0.5" />
+        </div>
+        <div>
+          <label class="field-label">自動リズム整形 (クオンタイズ)</label>
+          <select id="quantizeSelect">
+            <option value="0" selected>OFF (生演奏の揺らぎを維持)</option>
+            <option value="8">1/32音符グリッドに吸着</option>
+            <option value="4">1/16音符グリッドに吸着</option>
+            <option value="6">1/16三連符グリッドに吸着</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="normalizeCheck" checked />
+        <span>FFmpeg 音源ノーマライズ前処理 (弱音・ベロシティ精度向上)</span>
+      </label>
+
+      <label class="checkbox-row" id="sponsorblockRow">
+        <input type="checkbox" id="sponsorblockCheck" checked />
+        <span>SponsorBlockでYouTubeの非音楽区間(トーク等)を除外</span>
+      </label>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="alignFirstNoteCheck" checked />
+        <span>最初の打鍵タイミングを1小節目の頭(0秒)に自動整列</span>
+      </label>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="exportXmlCheck" />
+        <span>MusicXML (.musicxml) 楽譜データも同時生成する</span>
+      </label>
+
+      <button class="btn" id="startTranscribeBtn" style="margin-top:4px;">🚀 TranskunでMIDI変換を実行</button>
+    </div>
+
+    <div id="logBox">初期化中...</div>
   </section>
 
   <!-- 右パネル：ピアノロール・ビジュアライザー -->
   <section class="card">
+    <!-- 上段：再生・音量・ダウンロード -->
     <div class="visualizer-header">
       <div class="transport-controls">
         <button class="btn" id="playPauseBtn" disabled>▶ 再生</button>
         <button class="btn btn-secondary" id="stopBtn" disabled>⏹ 停止</button>
-        <select id="speedSelect" style="padding:8px; border-radius:6px; background:#0f172a; color:var(--text); border:1px solid var(--border);">
-          <option value="0.5">0.5x</option>
-          <option value="0.75">0.75x</option>
-          <option value="1" selected>1.0x</option>
-          <option value="1.25">1.25x</option>
-          <option value="1.5">1.5x</option>
-        </select>
-        <span id="timeDisplay" style="font-family:monospace; font-size:0.9rem;">00:00.0 / 00:00.0</span>
+
+        <!-- 音量調整 -->
+        <div class="control-item" style="background:#0f172a; padding:6px 10px; border-radius:6px; border:1px solid var(--border);">
+          <button class="btn btn-secondary btn-sm" id="muteBtn" style="padding:2px 6px;">🔊</button>
+          <input type="range" id="volumeSlider" min="0" max="150" value="100" style="width:85px; accent-color:var(--accent); cursor:pointer;" title="音量調整" />
+          <span id="volumeLabel" style="font-size:0.78rem; min-width:36px;">100%</span>
+        </div>
+
+        <!-- 再生速度 -->
+        <div class="control-item">
+          <span style="font-size:0.78rem; color:var(--muted);">速度:</span>
+          <select id="speedSelect" style="width:auto; padding:6px;">
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1.0x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+          </select>
+        </div>
+
+        <span id="timeDisplay" style="font-family:monospace; font-size:0.88rem;">00:00.0 / 00:00.0</span>
       </div>
-      <button class="btn btn-secondary" id="downloadMidiBtn" disabled>💾 MIDIダウンロード</button>
+
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" id="downloadMidiBtn" disabled>💾 MIDI保存</button>
+        <button class="btn btn-secondary" id="downloadXmlBtn" style="display:none;">🎼 楽譜(XML)保存</button>
+      </div>
     </div>
 
-    <input type="range" id="seekBar" class="seek-bar" min="0" max="100" step="0.05" value="0" disabled />
+    <!-- 中段：BPM指定・タップテンポ・小節グリッド調整バー -->
+    <div class="control-bar-2">
+      <div class="control-item">
+        <span>🎵 表示・書出BPM:</span>
+        <input type="number" id="visualizerBpm" value="120" min="20" max="300" step="0.5" style="width:76px; padding:4px 8px;" />
+        <button class="btn btn-secondary btn-sm" id="tapTempoBtn" title="曲に合わせて連打するとBPMを計測します">👆 タップ計測</button>
+      </div>
+
+      <div class="control-item">
+        <span>1拍目オフセット(秒):</span>
+        <input type="number" id="gridOffsetInput" value="0.00" step="0.02" style="width:74px; padding:4px 8px;" />
+        <button class="btn btn-secondary btn-sm" id="snapFirstNoteBtn" title="最初のノート位置に1小節目の頭を合わせます">先頭音に揃える</button>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="showGridCheck" checked />
+        <span>小節・拍グリッド線を表示</span>
+      </label>
+    </div>
+
+    <input type="range" id="seekBar" class="seek-bar" min="0" max="100" step="0.02" value="0" disabled />
 
     <div class="canvas-container">
-      <canvas id="pianoRollCanvas" width="800" height="460"></canvas>
+      <canvas id="pianoRollCanvas" width="860" height="460"></canvas>
     </div>
 
     <div class="meta-bar">
       <span id="metaFileName">ファイル: 未選択</span>
       <span id="metaNotes">総ノート数: -</span>
+      <span id="metaBarBeat">位置: 1小節目 1拍目</span>
       <span id="metaActiveChord">発音中: -</span>
     </div>
   </section>
 </main>
 
 <script>
+  // =========================================================================
+  // ★ Hugging Face SpaceのDirect URLを設定すると毎回入力不要になります
+  // =========================================================================
+  const DEFAULT_API_URL = "https://あなたのユーザー名-transkun-api.hf.space";
+
   // --- 状態管理 ---
   let currentMidi = null;
-  let currentMidiBytes = null;
+  let currentMusicXmlB64 = null;
   let currentFileName = "output.mid";
+  let currentTab = "youtube";
   let isPlaying = false;
   let currentTime = 0;
   let duration = 0;
   let playbackSpeed = 1.0;
+  let displayBpm = 120.0;
+  let gridOffsetSec = 0.0;
+  let isMuted = false;
+  let volumePercent = 100;
   let lastFrameTime = 0;
-  let activeNoteIndices = new Set();
   let sampler = null;
   let samplerReady = false;
+  let tapTimes = [];
 
   const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const MIN_PITCH = 21;  // A0
@@ -302,25 +472,39 @@
   const logBox = document.getElementById("logBox");
   const playPauseBtn = document.getElementById("playPauseBtn");
   const stopBtn = document.getElementById("stopBtn");
+  const muteBtn = document.getElementById("muteBtn");
+  const volumeSlider = document.getElementById("volumeSlider");
+  const volumeLabel = document.getElementById("volumeLabel");
   const speedSelect = document.getElementById("speedSelect");
+  const visualizerBpmInput = document.getElementById("visualizerBpm");
+  const inputBpm = document.getElementById("inputBpm");
+  const tapTempoBtn = document.getElementById("tapTempoBtn");
+  const gridOffsetInput = document.getElementById("gridOffsetInput");
+  const snapFirstNoteBtn = document.getElementById("snapFirstNoteBtn");
+  const showGridCheck = document.getElementById("showGridCheck");
   const seekBar = document.getElementById("seekBar");
   const timeDisplay = document.getElementById("timeDisplay");
   const downloadMidiBtn = document.getElementById("downloadMidiBtn");
+  const downloadXmlBtn = document.getElementById("downloadXmlBtn");
   const canvas = document.getElementById("pianoRollCanvas");
   const ctx = canvas.getContext("2d");
-
-  // ローカルストレージからAPI URLを復元
-  const savedApiUrl = localStorage.getItem("transkun_api_url");
-  if (savedApiUrl) apiUrlInput.value = savedApiUrl;
 
   function log(msg) {
     const time = new Date().toLocaleTimeString();
     logBox.textContent = `[${time}] ${msg}\n` + logBox.textContent;
   }
 
+  // API URLの復元
+  const savedApiUrl = localStorage.getItem("transkun_hf_api_url");
+  if (savedApiUrl) {
+    apiUrlInput.value = savedApiUrl;
+  } else if (!DEFAULT_API_URL.includes("あなたのユーザー名")) {
+    apiUrlInput.value = DEFAULT_API_URL;
+  }
+
   function getApiBase() {
     const raw = apiUrlInput.value.trim().replace(/\/+$/, "");
-    localStorage.setItem("transkun_api_url", raw);
+    if (raw) localStorage.setItem("transkun_hf_api_url", raw);
     return raw;
   }
 
@@ -329,17 +513,105 @@
     btn.addEventListener("click", () => {
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      const target = btn.dataset.tab;
-      document.getElementById("tab-youtube").style.display = target === "youtube" ? "flex" : "none";
-      document.getElementById("tab-audio").style.display = target === "audio" ? "flex" : "none";
-      document.getElementById("tab-midi").style.display = target === "midi" ? "flex" : "none";
+      currentTab = btn.dataset.tab;
+      document.getElementById("tab-youtube").style.display = currentTab === "youtube" ? "flex" : "none";
+      document.getElementById("tab-audio").style.display = currentTab === "audio" ? "flex" : "none";
+      document.getElementById("tab-midi").style.display = currentTab === "midi" ? "flex" : "none";
+      document.getElementById("transcribeOptions").style.display = currentTab === "midi" ? "none" : "flex";
+      document.getElementById("sponsorblockRow").style.display = currentTab === "youtube" ? "flex" : "none";
     });
+  });
+
+  // --- 音量調整制御 ---
+  function applyVolume() {
+    if (isMuted || volumePercent === 0) {
+      Tone.Destination.mute = true;
+      muteBtn.textContent = "🔇";
+      volumeLabel.textContent = "Mute";
+    } else {
+      Tone.Destination.mute = false;
+      // 100% = 0dB, 150% = +3.5dB, 10% = -20dB
+      const gain = volumePercent / 100.0;
+      Tone.Destination.volume.value = 20 * Math.log10(gain);
+      muteBtn.textContent = volumePercent < 50 ? "🔉" : "🔊";
+      volumeLabel.textContent = `${volumePercent}%`;
+    }
+  }
+
+  volumeSlider.addEventListener("input", (e) => {
+    volumePercent = parseInt(e.target.value, 10);
+    isMuted = false;
+    applyVolume();
+  });
+
+  muteBtn.addEventListener("click", () => {
+    isMuted = !isMuted;
+    applyVolume();
+  });
+
+  // --- BPM・オフセット・タップテンポ制御 ---
+  visualizerBpmInput.addEventListener("input", (e) => {
+    const val = parseFloat(e.target.value);
+    if (val >= 20 && val <= 300) {
+      displayBpm = val;
+      inputBpm.value = val;
+      drawPianoRoll();
+    }
+  });
+
+  inputBpm.addEventListener("input", (e) => {
+    const val = parseFloat(e.target.value);
+    if (val >= 20 && val <= 300) {
+      displayBpm = val;
+      visualizerBpmInput.value = val;
+      drawPianoRoll();
+    }
+  });
+
+  gridOffsetInput.addEventListener("input", (e) => {
+    gridOffsetSec = parseFloat(e.target.value) || 0.0;
+    drawPianoRoll();
+  });
+
+  snapFirstNoteBtn.addEventListener("click", () => {
+    if (currentMidi && currentMidi._allNotes && currentMidi._allNotes.length > 0) {
+      gridOffsetSec = parseFloat(currentMidi._allNotes[0].time.toFixed(3));
+      gridOffsetInput.value = gridOffsetSec;
+      drawPianoRoll();
+      log(`1小節目の頭を最初のノート (${gridOffsetSec}秒) に揃えました。`);
+    }
+  });
+
+  showGridCheck.addEventListener("change", () => drawPianoRoll());
+
+  tapTempoBtn.addEventListener("click", () => {
+    const now = performance.now();
+    if (tapTimes.length > 0 && now - tapTimes[tapTimes.length - 1] > 2500) {
+      tapTimes = [];
+    }
+    tapTimes.push(now);
+    if (tapTimes.length > 6) tapTimes.shift();
+
+    if (tapTimes.length >= 2) {
+      let intervals = [];
+      for (let i = 1; i < tapTimes.length; i++) {
+        intervals.push(tapTimes[i] - tapTimes[i - 1]);
+      }
+      const avgMs = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      const tappedBpm = Math.round((60000 / avgMs) * 2) / 2;
+      if (tappedBpm >= 30 && tappedBpm <= 280) {
+        displayBpm = tappedBpm;
+        visualizerBpmInput.value = tappedBpm;
+        inputBpm.value = tappedBpm;
+        drawPianoRoll();
+      }
+    }
   });
 
   // --- Salamander Grand Piano Sampler 初期化 ---
   async function initSampler() {
     if (sampler) return;
-    log("ピアノ音源 (Salamander Grand Piano) を読み込み中...");
+    log("ピアノ音源 (Salamander Grand Piano) をロード中...");
     sampler = new Tone.Sampler({
       urls: {
         A0: "A0.mp3", C1: "C1.mp3", "D#1": "Ds1.mp3", "F#1": "Fs1.mp3",
@@ -355,87 +627,109 @@
       baseUrl: "https://tonejs.github.io/audio/salamander/",
       onload: () => {
         samplerReady = true;
-        log("ピアノ音源の準備が完了しました！");
+        applyVolume();
+        log("ピアノ音源の準備が完了しました。");
       }
     }).toDestination();
   }
 
   // --- API接続確認 ---
-  checkApiBtn.addEventListener("click", async () => {
+  async function verifyApiConnection() {
     const base = getApiBase();
-    if (!base) return alert("ColabのURLを入力してください");
+    if (!base) {
+      log("右上の入力欄にHugging Face SpaceのDirect URLを入力してください。");
+      return;
+    }
     try {
-      log("サーバー接続を確認中...");
+      log(`Hugging Face Space (${base}) へ接続確認中...`);
       const res = await fetch(`${base}/health`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       statusDot.className = "status-dot online";
-      log(`接続成功！ バックエンド演算デバイス: ${data.device.toUpperCase()}`);
+      log(`✅ APIサーバー接続完了！ (動作デバイス: ${data.device.toUpperCase()})`);
     } catch (e) {
       statusDot.className = "status-dot offline";
-      log("接続失敗: URLが正しいか、Colabが起動中か確認してください。");
+      log("⚠️ 接続失敗。SpaceがBuildingまたはSleeping状態でないか確認してください。");
     }
-  });
+  }
 
-  // --- YouTube変換 ---
-  document.getElementById("convertYoutubeBtn").addEventListener("click", async () => {
+  checkApiBtn.addEventListener("click", verifyApiConnection);
+
+  // --- 変換実行 (YouTube / 音声ファイル共通ボタン) ---
+  document.getElementById("startTranscribeBtn").addEventListener("click", async () => {
     const base = getApiBase();
-    const url = document.getElementById("youtubeUrl").value.trim();
-    if (!base) return alert("上部にColabのAPIサーバーURLを入力してください");
-    if (!url) return alert("YouTubeのURLを入力してください");
+    if (!base) return alert("上部にHugging Face SpaceのURLを入力してください");
 
-    const btn = document.getElementById("convertYoutubeBtn");
+    const startTime = document.getElementById("startTimeInput").value.trim();
+    const endTime = document.getElementById("endTimeInput").value.trim();
+    const bpm = parseFloat(inputBpm.value) || 120.0;
+    const quantizeGrid = parseInt(document.getElementById("quantizeSelect").value, 10) || 0;
+    const normalize = document.getElementById("normalizeCheck").checked;
+    const sponsorblock = document.getElementById("sponsorblockCheck").checked;
+    const alignFirstNote = document.getElementById("alignFirstNoteCheck").checked;
+    const exportMusicxml = document.getElementById("exportXmlCheck").checked;
+
+    const btn = document.getElementById("startTranscribeBtn");
     btn.disabled = true;
-    log("YouTubeから音声を取得し、TranskunでMIDIへ変換しています（数分かかる場合があります）...");
+    const t0 = Date.now();
 
     try {
-      const res = await fetch(`${base}/transcribe/youtube`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
+      let res;
+      if (currentTab === "youtube") {
+        const url = document.getElementById("youtubeUrl").value.trim();
+        if (!url) throw new Error("YouTubeのURLを入力してください");
+        log(`YouTube音源を取得してTranskun変換を実行中 (区間: ${startTime || "先頭"}〜${endTime || "末尾"}, BPM: ${bpm})...`);
+        res = await fetch(`${base}/transcribe/youtube`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url,
+            start_time: startTime || null,
+            end_time: endTime || null,
+            bpm,
+            quantize_grid: quantizeGrid,
+            normalize,
+            sponsorblock,
+            align_first_note: alignFirstNote,
+            export_musicxml: exportMusicxml
+          })
+        });
+      } else if (currentTab === "audio") {
+        const fileInput = document.getElementById("audioFileInput");
+        if (!fileInput.files.length) throw new Error("音声ファイルを選択してください");
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        if (startTime) formData.append("start_time", startTime);
+        if (endTime) formData.append("end_time", endTime);
+        formData.append("bpm", bpm);
+        formData.append("quantize_grid", quantizeGrid);
+        formData.append("normalize", normalize);
+        formData.append("align_first_note", alignFirstNote);
+        formData.append("export_musicxml", exportMusicxml);
+
+        log(`「${file.name}」を送信してTranskun変換を実行中 (区間: ${startTime || "先頭"}〜${endTime || "末尾"}, BPM: ${bpm})...`);
+        res = await fetch(`${base}/transcribe/file`, {
+          method: "POST",
+          body: formData
+        });
+      }
+
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "変換エラー");
+        throw new Error(err.detail || "変換エラーが発生しました");
       }
+
       const data = await res.json();
-      loadBase64Midi(data.midi_base64, data.filename);
-      log(`変換完了！ (${data.filename})`);
+      const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+
+      currentMusicXmlB64 = data.musicxml_base64 || null;
+      downloadXmlBtn.style.display = currentMusicXmlB64 ? "inline-flex" : "none";
+
+      loadBase64Midi(data.midi_base64, data.filename, bpm);
+      log(`🎉 変換完了！ (${data.filename} / 所要時間: ${elapsed}秒)`);
     } catch (e) {
-      log(`エラー: ${e.message}`);
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  // --- 音声ファイル変換 ---
-  document.getElementById("convertAudioBtn").addEventListener("click", async () => {
-    const base = getApiBase();
-    const fileInput = document.getElementById("audioFileInput");
-    if (!base) return alert("上部にColabのAPIサーバーURLを入力してください");
-    if (!fileInput.files.length) return alert("音声ファイルを選択してください");
-
-    const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const btn = document.getElementById("convertAudioBtn");
-    btn.disabled = true;
-    log(`「${file.name}」をアップロードしてTranskunで変換中...`);
-
-    try {
-      const res = await fetch(`${base}/transcribe/file`, {
-        method: "POST",
-        body: formData
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "変換エラー");
-      }
-      const data = await res.json();
-      loadBase64Midi(data.midi_base64, data.filename);
-      log(`変換完了！ (${data.filename})`);
-    } catch (e) {
-      log(`エラー: ${e.message}`);
+      log(`❌ エラー: ${e.message}`);
     } finally {
       btn.disabled = false;
     }
@@ -446,30 +740,45 @@
     const file = e.target.files[0];
     if (!file) return;
     const buf = await file.arrayBuffer();
+    currentMusicXmlB64 = null;
+    downloadXmlBtn.style.display = "none";
     loadArrayBufferMidi(new Uint8Array(buf), file.name);
     log(`ローカルMIDI「${file.name}」を読み込みました。`);
   });
 
-  function loadBase64Midi(b64, filename) {
+  function loadBase64Midi(b64, filename, forcedBpm = null) {
     const binStr = atob(b64);
     const bytes = new Uint8Array(binStr.length);
     for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-    loadArrayBufferMidi(bytes, filename);
+    loadArrayBufferMidi(bytes, filename, forcedBpm);
   }
 
-  function loadArrayBufferMidi(bytes, filename) {
+  function loadArrayBufferMidi(bytes, filename, forcedBpm = null) {
     stopPlayback();
-    currentMidiBytes = bytes;
     currentFileName = filename;
     currentMidi = new Midi(bytes);
     duration = currentMidi.duration || 1;
     seekBar.max = duration;
     seekBar.value = 0;
 
-    // 全トラックのノートを統合して時間順ソート
+    if (forcedBpm) {
+      displayBpm = forcedBpm;
+    } else if (currentMidi.header.tempos && currentMidi.header.tempos.length > 0) {
+      displayBpm = Math.round(currentMidi.header.tempos[0].bpm * 10) / 10;
+    }
+    visualizerBpmInput.value = displayBpm;
+    inputBpm.value = displayBpm;
+    gridOffsetSec = 0.0;
+    gridOffsetInput.value = "0.00";
+
     let allNotes = [];
     currentMidi.tracks.forEach(t => {
-      t.notes.forEach(n => allNotes.push(n));
+      t.notes.forEach(n => allNotes.push({
+        midi: n.midi,
+        time: n.time,
+        duration: n.duration,
+        velocity: n.velocity
+      }));
     });
     allNotes.sort((a, b) => a.time - b.time);
     currentMidi._allNotes = allNotes;
@@ -486,14 +795,48 @@
     drawPianoRoll();
   }
 
-  // --- ダウンロード機能 ---
+  // --- 動的BPM・オフセット反映MIDIダウンロード機能 ---
   downloadMidiBtn.addEventListener("click", () => {
-    if (!currentMidiBytes) return;
-    const blob = new Blob([currentMidiBytes], { type: "audio/midi" });
+    if (!currentMidi || !currentMidi._allNotes) return;
+
+    // 画面上で設定された最新のBPMとオフセットを使って新しくMIDIバイナリを生成
+    const exportMidi = new Midi();
+    exportMidi.header.setTempo(displayBpm);
+    const track = exportMidi.addTrack();
+
+    currentMidi._allNotes.forEach(n => {
+      const shiftedTime = Math.max(0, n.time - gridOffsetSec);
+      track.addNote({
+        midi: n.midi,
+        time: shiftedTime,
+        duration: n.duration,
+        velocity: n.velocity
+      });
+    });
+
+    const outBytes = exportMidi.toArray();
+    const blob = new Blob([outBytes], { type: "audio/midi" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = currentFileName;
+    const cleanName = currentFileName.replace(/\.mid$/i, "");
+    a.download = `${cleanName}_${Math.round(displayBpm)}bpm.mid`;
+    a.click();
+    URL.revokeObjectURL(url);
+    log(`BPM=${displayBpm} でMIDIファイルを保存しました。`);
+  });
+
+  // --- MusicXMLダウンロード機能 ---
+  downloadXmlBtn.addEventListener("click", () => {
+    if (!currentMusicXmlB64) return;
+    const binStr = atob(currentMusicXmlB64);
+    const bytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+    const blob = new Blob([bytes], { type: "application/vnd.recordare.musicxml+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = currentFileName.replace(/\.mid$/i, ".musicxml");
     a.click();
     URL.revokeObjectURL(url);
   });
@@ -517,7 +860,6 @@
 
   seekBar.addEventListener("input", (e) => {
     currentTime = parseFloat(e.target.value);
-    activeNoteIndices.clear();
     if (sampler && samplerReady) sampler.releaseAll();
     updateTimeDisplay();
     drawPianoRoll();
@@ -542,7 +884,6 @@
     pausePlayback();
     currentTime = 0;
     seekBar.value = 0;
-    activeNoteIndices.clear();
     updateTimeDisplay();
     drawPianoRoll();
   }
@@ -561,6 +902,14 @@
 
   function updateTimeDisplay() {
     timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+
+    // 現在の小節・拍の計算 (4/4拍子基準)
+    const secPerBeat = 60.0 / displayBpm;
+    const relSec = Math.max(0, currentTime - gridOffsetSec);
+    const totalBeats = relSec / secPerBeat;
+    const bar = Math.floor(totalBeats / 4) + 1;
+    const beat = (Math.floor(totalBeats) % 4) + 1;
+    document.getElementById("metaBarBeat").textContent = `位置: ${bar}小節目 ${beat}拍目 (BPM:${displayBpm})`;
   }
 
   function tick(now) {
@@ -578,7 +927,6 @@
     seekBar.value = currentTime;
     updateTimeDisplay();
 
-    // 新たに発音タイミングを迎えたノートをトリガー
     if (currentMidi && samplerReady) {
       const notes = currentMidi._allNotes;
       for (let i = 0; i < notes.length; i++) {
@@ -598,7 +946,7 @@
     requestAnimationFrame(tick);
   }
 
-  // --- Canvas ピアノロール描画 (落下式 + 88鍵盤) ---
+  // --- Canvas ピアノロール描画 (小節グリッド + 落下式ノート + 88鍵盤) ---
   function isBlackKey(midiNum) {
     return [1, 3, 6, 8, 10].includes(midiNum % 12);
   }
@@ -608,22 +956,53 @@
     const H = canvas.height;
     const KEYBOARD_H = 68;
     const ROLL_H = H - KEYBOARD_H;
-    const LOOKAHEAD_SEC = 4.0; // 画面内に表示する未来の秒数
+    const LOOKAHEAD_SEC = 4.0;
     const keyWidth = W / TOTAL_KEYS;
 
     ctx.fillStyle = "#070a12";
     ctx.fillRect(0, 0, W, H);
 
-    // オクターブ補助線
+    // 縦のオクターブ境界線
     for (let m = MIN_PITCH; m <= MAX_PITCH; m++) {
       const x = (m - MIN_PITCH) * keyWidth;
       if (m % 12 === 0) {
-        ctx.strokeStyle = "#1e293b";
+        ctx.strokeStyle = "#162032";
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, ROLL_H);
         ctx.stroke();
       }
+    }
+
+    // 横の小節線・拍グリッド線の描画 (BPM連動)
+    if (showGridCheck.checked && displayBpm > 0) {
+      const secPerBeat = 60.0 / displayBpm;
+      const firstVisibleBeatIndex = Math.floor((currentTime - gridOffsetSec) / secPerBeat);
+      const lastVisibleBeatIndex = Math.ceil((currentTime + LOOKAHEAD_SEC - gridOffsetSec) / secPerBeat);
+
+      for (let b = firstVisibleBeatIndex; b <= lastVisibleBeatIndex; b++) {
+        if (b < 0) continue;
+        const beatTime = gridOffsetSec + b * secPerBeat;
+        if (beatTime < currentTime || beatTime > currentTime + LOOKAHEAD_SEC) continue;
+
+        const y = ROLL_H - ((beatTime - currentTime) / LOOKAHEAD_SEC) * ROLL_H;
+        const isBarLine = (b % 4 === 0);
+
+        ctx.strokeStyle = isBarLine ? "rgba(148, 163, 184, 0.45)" : "rgba(51, 65, 85, 0.45)";
+        ctx.lineWidth = isBarLine ? 1.5 : 1;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+
+        if (isBarLine) {
+          const barNum = Math.floor(b / 4) + 1;
+          ctx.fillStyle = "rgba(148, 163, 184, 0.75)";
+          ctx.font = "10px monospace";
+          ctx.fillText(`Bar ${barNum}`, 6, Math.max(10, y - 4));
+        }
+      }
+      ctx.lineWidth = 1;
     }
 
     const activePitches = new Set();
@@ -644,7 +1023,6 @@
         const rectY = Math.max(0, yTop);
         const rectH = Math.max(4, Math.min(ROLL_H, yBottom) - rectY);
 
-        // ベロシティに応じて色相・明度を変化
         const hue = 195 - Math.floor(n.velocity * 55);
         const isHit = n.time <= currentTime && noteEnd >= currentTime;
         if (isHit) {
@@ -664,7 +1042,7 @@
     document.getElementById("metaActiveChord").textContent =
       `発音中: ${activeNames.length ? activeNames.join(" ") : "-"}`;
 
-    // 下部88鍵盤の描画
+    // 88鍵盤の描画
     for (let m = MIN_PITCH; m <= MAX_PITCH; m++) {
       const x = (m - MIN_PITCH) * keyWidth;
       const black = isBlackKey(m);
@@ -678,7 +1056,6 @@
 
       ctx.fillRect(x + 0.5, ROLL_H, keyWidth - 1, black ? KEYBOARD_H * 0.65 : KEYBOARD_H);
 
-      // Cの音にオクターブ表記
       if (m % 12 === 0) {
         ctx.fillStyle = active ? "#0f172a" : "#475569";
         ctx.font = "9px sans-serif";
@@ -686,7 +1063,6 @@
       }
     }
 
-    // 鍵盤上部の境界ライン
     ctx.strokeStyle = "#38bdf8";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -696,8 +1072,15 @@
     ctx.lineWidth = 1;
   }
 
-  // 初期描画
+  // 初期実行
+  logBox.textContent = "";
+  applyVolume();
   drawPianoRoll();
+  if (getApiBase()) {
+    verifyApiConnection();
+  } else {
+    log("準備完了。Hugging Face SpaceのDirect URLを設定するか、手元のMIDIファイルを読み込んでください。");
+  }
 </script>
 </body>
 </html>
